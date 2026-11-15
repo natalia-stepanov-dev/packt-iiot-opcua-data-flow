@@ -1,7 +1,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert/strict");
-const { DataType, StatusCodes, standardUnits } = require("node-opcua");
-const { readValue, writeDouble, readUnitId } = require("../setup");
+const { DataType, StatusCodes } = require("node-opcua");
+const { readValue, writeDouble, readUnitId, PERCENT } = require("../setup");
 
 const NODE = "Gateway.Disk.Usage";
 
@@ -19,6 +19,6 @@ describe("Disk usage", () => {
     });
 
     test("is in percent", async () => {
-        assert.equal(await readUnitId(NODE), standardUnits.percent.unitId);
+        assert.equal(await readUnitId(NODE), PERCENT);
     });
 });

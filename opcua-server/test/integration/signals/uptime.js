@@ -1,7 +1,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert/strict");
-const { DataType, StatusCodes, standardUnits } = require("node-opcua");
-const { readValue, writeDouble, readUnitId } = require("../setup");
+const { DataType, StatusCodes } = require("node-opcua");
+const { readValue, writeDouble, readUnitId, SECOND } = require("../setup");
 
 const NODE = "Gateway.Uptime";
 
@@ -21,6 +21,6 @@ describe("Uptime", () => {
     });
 
     test("is in seconds", async () => {
-        assert.equal(await readUnitId(NODE), standardUnits.second.unitId);
+        assert.equal(await readUnitId(NODE), SECOND);
     });
 });

@@ -99,4 +99,19 @@ async function readFirstValue(name) {
     return dataValue;
 }
 
-module.exports = { connect, disconnect, readValue, writeDouble, readUnitId, readFirstValue };
+// By hand on purpose. Taken from node-opcua, they would always match
+const PERCENT = 20529; // ← UNECE "P1"
+const SECOND = 5457219; // ← UNECE "SEC"
+const CELSIUS = 4408652; // ← UNECE "CEL"
+
+module.exports = {
+    connect,
+    disconnect,
+    readValue,
+    writeDouble,
+    readUnitId,
+    readFirstValue,
+    PERCENT,
+    SECOND,
+    CELSIUS,
+};
