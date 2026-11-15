@@ -4,6 +4,7 @@ const { constructAddressSpace } = require("./opcua/address-space");
 const { version } = require("../package.json");
 const { loadConfig } = require("./config");
 const { createUserManager } = require("./opcua/user-manager");
+const { logger } = require("./logger");
 
 (async () => {
     try {
@@ -32,14 +33,13 @@ const { createUserManager } = require("./opcua/user-manager");
         await server.initialize();
         const stopSignals = constructAddressSpace(server);
         await server.start();
-        console.log("Server is now listening ... ( press CTRL+C to stop) ");
-        server.endpoints[0].endpointDescriptions().forEach(function (endpoint) {
-            console.log(
-                endpoint.endpointUrl,
-                endpoint.securityMode.toString(),
-                endpoint.securityPolicyUri.toString(),
-            );
-        });
+        const endpoints = server.endpoints[0].endpointDescriptions().map((endpoint) => ({
+            url: endpoint.endpointUrl,
+            mode: MessageSecurityMode[endpoint.securityMode],
+            policy: endpoint.securityPolicyUri.split("#")[1],
+        }));
+        // The tests wait for this text before they start
+        logger.info({ port: config.port, version, endpoints }, "Server is now listening");
 
         // A second signal during shutdown must not start it again.
         let stopping = false;
@@ -48,14 +48,14 @@ const { createUserManager } = require("./opcua/user-manager");
                 return;
             }
             stopping = true;
-            console.log(`${signal} received, shutting down`);
+            logger.info({ signal }, "Shutting down");
             try {
                 stopSignals();
                 await server.shutdown();
-                console.log("terminated");
+                logger.info("Server stopped");
                 process.exit(0);
             } catch (err) {
-                console.log(err);
+                logger.error({ err }, "Shutdown failed");
                 process.exit(1);
             }
         }
@@ -64,7 +64,7 @@ const { createUserManager } = require("./opcua/user-manager");
         process.on("SIGINT", () => shutdown("SIGINT"));
         process.on("SIGTERM", () => shutdown("SIGTERM"));
     } catch (err) {
-        console.log(err);
+        logger.fatal({ err }, "Server failed to start");
         process.exit(1);
     }
 })();

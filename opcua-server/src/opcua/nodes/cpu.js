@@ -1,6 +1,7 @@
 "use strict";
 const { DataType, StatusCodes, standardUnits } = require("node-opcua");
 const { readCpuTimes, cpuUsagePercent, readCpuTemperature } = require("../../signals/cpu");
+const { logger } = require("../../logger");
 
 const SAMPLE_INTERVAL_MS = 1000;
 
@@ -46,6 +47,7 @@ function addCpuNodes(namespace, gateway) {
         StatusCodes.BadWaitingForInitialData,
     );
 
+    let hasSensor = null;
     let previousTimes = readCpuTimes();
     const timer = setInterval(() => {
         const currentTimes = readCpuTimes();
@@ -60,6 +62,15 @@ function addCpuNodes(namespace, gateway) {
             new Date(),
         );
         const celsius = readCpuTemperature();
+        // Log changes only. A line every second would bury the log
+        if ((celsius !== null) !== hasSensor) {
+            hasSensor = celsius != null;
+            if (hasSensor) {
+                logger.info("CPU temperature sensor found");
+            } else {
+                logger.warn("No CPU temperature sensor, the node shows BadOutOfService");
+            }
+        }
         // No sensor in a VM. A fake 0°C would look like a real value
         const status = celsius === null ? StatusCodes.BadOutOfService : StatusCodes.Good;
         temperature.setValueFromSource(
