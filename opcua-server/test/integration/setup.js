@@ -1,7 +1,15 @@
 // All tests in signals/ share this server. It takes ~1.5 s to start.
 const { spawn } = require("node:child_process");
 const path = require("node:path");
-const { OPCUAClient, AttributeIds, DataType, StatusCodes, makeBrowsePath } = require("node-opcua");
+const {
+    OPCUAClient,
+    AttributeIds,
+    DataType,
+    StatusCodes,
+    makeBrowsePath,
+    MessageSecurityMode,
+    SecurityPolicy,
+} = require("node-opcua");
 
 const ENDPOINT = "opc.tcp://localhost:26543";
 const NAMESPACE_URI = "urn:iiot-edge-gateway";
@@ -37,6 +45,8 @@ async function connect() {
     client = OPCUAClient.create({
         endpointMustExist: false,
         connectionStrategy: { maxRetry: 0 },
+        securityMode: MessageSecurityMode.SignAndEncrypt,
+        securityPolicy: SecurityPolicy.Basic256Sha256,
     });
     await client.connect(ENDPOINT);
     session = await client.createSession();
@@ -114,4 +124,5 @@ module.exports = {
     PERCENT,
     SECOND,
     CELSIUS,
+    ENDPOINT,
 };

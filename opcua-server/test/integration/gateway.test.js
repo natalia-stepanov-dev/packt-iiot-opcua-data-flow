@@ -9,3 +9,4 @@ require("./signals/memory");
 require("./signals/cpu");
 require("./signals/uptime");
 require("./signals/disk");
+require("./security");
