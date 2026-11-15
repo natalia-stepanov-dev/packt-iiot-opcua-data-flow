@@ -17,9 +17,22 @@ function readPort(env) {
     return port;
 }
 
+// No default on purpose. A known default password is a classic hole
+function readRequired(env, name) {
+    const value = env[name];
+    if (value === undefined || value === "") {
+        throw new Error(`${name} must be set`);
+    }
+    return value;
+}
+
 // env is a parameter so tests can pass their own values.
 function loadConfig(env = process.env) {
-    return { port: readPort(env) };
+    return {
+        port: readPort(env),
+        user: readRequired(env, "OPCUA_USER"),
+        password: readRequired(env, "OPCUA_PASSWORD"),
+    };
 }
 
 module.exports = { loadConfig };

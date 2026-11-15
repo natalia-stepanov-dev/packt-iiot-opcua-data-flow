@@ -3,6 +3,7 @@ const { OPCUAServer, nodesets, MessageSecurityMode, SecurityPolicy } = require("
 const { constructAddressSpace } = require("./opcua/address-space");
 const { version } = require("../package.json");
 const { loadConfig } = require("./config");
+const { createUserManager } = require("./opcua/user-manager");
 
 (async () => {
     try {
@@ -17,6 +18,8 @@ const { loadConfig } = require("./config");
                 SecurityPolicy.Aes128_Sha256_RsaOaep,
                 SecurityPolicy.Aes256_Sha256_RsaPss,
             ],
+            userManager: createUserManager(config.user, config.password),
+            allowAnonymous: false,
             // Docker build will set buildNumber and buildDate
             buildInfo: {
                 productName: "IIoT Edge Gateway",

@@ -9,9 +9,14 @@ const {
     makeBrowsePath,
     MessageSecurityMode,
     SecurityPolicy,
+    UserTokenType,
 } = require("node-opcua");
 
 const ENDPOINT = "opc.tcp://localhost:26543";
+// Test only. A real install gets them from the environment
+const TEST_USER = "test-user";
+const TEST_PASSWORD = "test-password";
+
 const NAMESPACE_URI = "urn:iiot-edge-gateway";
 const SERVER_FILE = path.join(__dirname, "..", "..", "src", "main.js");
 
@@ -25,6 +30,7 @@ function startServer() {
     return new Promise((resolve, reject) => {
         const child = spawn(process.execPath, [SERVER_FILE], {
             stdio: ["ignore", "pipe", "inherit"],
+            env: { ...process.env, OPCUA_USER: TEST_USER, OPCUA_PASSWORD: TEST_PASSWORD },
         });
         const timer = setTimeout(() => reject(new Error("Server did not start in 20 s")), 20000);
         child.stdout.on("data", (chunk) => {
@@ -49,7 +55,11 @@ async function connect() {
         securityPolicy: SecurityPolicy.Basic256Sha256,
     });
     await client.connect(ENDPOINT);
-    session = await client.createSession();
+    session = await client.createSession({
+        type: UserTokenType.UserName,
+        userName: TEST_USER,
+        password: TEST_PASSWORD,
+    });
 
     // ns=2 today, but the server may give another number.
     const namespaceArray = await session.read({
@@ -125,4 +135,6 @@ module.exports = {
     SECOND,
     CELSIUS,
     ENDPOINT,
+    TEST_USER,
+    TEST_PASSWORD,
 };
