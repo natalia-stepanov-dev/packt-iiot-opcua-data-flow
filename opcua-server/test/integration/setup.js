@@ -85,4 +85,18 @@ async function readUnitId(name) {
     return units.value.value.unitId;
 }
 
-module.exports = { connect, disconnect, readValue, writeDouble, readUnitId };
+// Notes filled by a timer have no value in the first second
+async function readFirstValue(name) {
+    let dataValue = await readValue(name);
+    for (
+        let i = 0;
+        i < 15 && dataValue.statusCode.value === StatusCodes.BadWaitingForInitialData.value;
+        i++
+    ) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        dataValue = await readValue(name);
+    }
+    return dataValue;
+}
+
+module.exports = { connect, disconnect, readValue, writeDouble, readUnitId, readFirstValue };

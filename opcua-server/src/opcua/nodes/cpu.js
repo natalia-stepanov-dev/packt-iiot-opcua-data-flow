@@ -1,6 +1,6 @@
 "use strict";
 const { DataType, StatusCodes, standardUnits } = require("node-opcua");
-const { readCpuTimes, cpuUsagePercent } = require("../../signals/cpu");
+const { readCpuTimes, cpuUsagePercent, readCpuTemperature } = require("../../signals/cpu");
 
 const SAMPLE_INTERVAL_MS = 1000;
 
@@ -30,6 +30,22 @@ function addCpuNodes(namespace, gateway) {
         StatusCodes.BadWaitingForInitialData,
     );
 
+    const temperature = namespace.addAnalogDataItem({
+        componentOf: cpu,
+        nodeId: "s=Gateway.Cpu.Temperature",
+        browseName: "Temperature",
+        dataType: "Double",
+        engineeringUnits: standardUnits.degree_celsius,
+        engineeringUnitsRange: { low: 0, high: 125 },
+        accessLevel: "CurrentRead",
+        userAccessLevel: "CurrentRead",
+        minimumSamplingInterval: SAMPLE_INTERVAL_MS,
+    });
+    temperature.setValueFromSource(
+        { dataType: DataType.Double, value: 0 },
+        StatusCodes.BadWaitingForInitialData,
+    );
+
     let previousTimes = readCpuTimes();
     const timer = setInterval(() => {
         const currentTimes = readCpuTimes();
@@ -41,6 +57,14 @@ function addCpuNodes(namespace, gateway) {
         usage.setValueFromSource(
             { dataType: DataType.Double, value: percent },
             StatusCodes.Good,
+            new Date(),
+        );
+        const celsius = readCpuTemperature();
+        // No sensor in a VM. A fake 0°C would look like a real value
+        const status = celsius === null ? StatusCodes.BadOutOfService : StatusCodes.Good;
+        temperature.setValueFromSource(
+            { dataType: DataType.Double, value: celsius ?? 0 },
+            status,
             new Date(),
         );
     }, SAMPLE_INTERVAL_MS);
