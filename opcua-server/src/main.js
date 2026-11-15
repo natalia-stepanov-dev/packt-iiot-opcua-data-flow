@@ -1,6 +1,7 @@
 "use strict";
 const { OPCUAServer, nodesets } = require("node-opcua");
 const { constructAddressSpace } = require("./opcua/address-space");
+const { version } = require("../package.json");
 const { loadConfig } = require("./config");
 
 (async () => {
@@ -9,10 +10,12 @@ const { loadConfig } = require("./config");
         const server = new OPCUAServer({
             port: config.port,
             nodeset_filename: [nodesets.standard],
+            // Docker build will set buildNumber and buildDate
             buildInfo: {
-                productName: "Sample NodeOPCUA Server1",
-                buildNumber: "7658",
-                buildDate: new Date(2020, 6, 14),
+                productName: "IIoT Edge Gateway",
+                productUri: "urn:iiot-edge-gateway",
+                manufacturerName: "natalia-stepanov-dev",
+                softwareVersion: version,
             },
         });
 

@@ -1,7 +1,7 @@
 {
-  "name": "node-opcua-sampleserver",
-  "version": "0.0.56",
-  "description": "Simple OPCUA Server made with node-opcua",
+  "name": "iiot-edge-gateway",
+  "version": "0.1.0",
+  "description": "OPC UA server with health data of an edge gateway",
   "main": "src/main.js",
   "engines": {
     "node": ">=22.13"
@@ -37,5 +37,6 @@
     "eslint": "10.13.0",
     "globals": "17.13.0",
     "prettier": "3.9.10"
-  }
+  },
+  "private": true
 }
