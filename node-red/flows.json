@@ -34,14 +34,14 @@
                 "vt": "str"
             }
         ],
-        "repeat": "",
+        "repeat": "10",
         "crontab": "",
         "once": true,
         "onceDelay": 0.1,
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 260,
+        "x": 270,
         "y": 280,
         "wires": [
             [
@@ -53,11 +53,11 @@
         "id": "10c9feab8b413fb6",
         "type": "OpcUa-Item",
         "z": "b1828014b1a97944",
-        "item": "ns=2;s=Gateway.Cpu.Usage",
-        "datatype": "Double",
+        "item": "ns=0;i=2255",
+        "datatype": "String Array",
         "value": "",
         "name": "",
-        "x": 480,
+        "x": 460,
         "y": 280,
         "wires": [
             [
@@ -87,14 +87,14 @@
         "sendBufferSize": 8192,
         "setstatusandtime": false,
         "keepsessionalive": false,
-        "name": "",
+        "name": "namespace array",
         "applicationName": "",
         "applicationUri": "",
-        "x": 700,
+        "x": 650,
         "y": 280,
         "wires": [
             [
-                "feda286b36964b06"
+                "3d5570da6e96c017"
             ],
             [],
             []
@@ -113,8 +113,88 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 880,
-        "y": 280,
+        "x": 1200,
+        "y": 260,
         "wires": []
+    },
+    {
+        "id": "3d5570da6e96c017",
+        "type": "function",
+        "z": "b1828014b1a97944",
+        "name": "find namespace",
+        "func": "// subscriptionId isa known service message from the client\nif (msg.topic === \"subscriptionId\") {\n    return null;\n}\n\n// Anything else without a list is a problem. Someone must see it\nif (!Array.isArray(msg.payload)) {\n    node.error(`no namespace list, status ${JSON.stringify(msg.statusCode)}`, msg);\n    return null;\n}\n\nconst NAMESPACE_URI = \"urn:iiot-edge-gateway\";\nconst NODE_IDS = [\"Gateway.Cpu.Usage\"];\n\nconst index = msg.payload.indexOf(NAMESPACE_URI);\n// Better no data than data from another server\nif (index === -1) {\n    node.error(`namespace ${NAMESPACE_URI} not found`);\n    return null;\n}\n\nconst previous = flow.get(\"ns\");\n// After a reconnect the list comes again. Same index, nothing to do\nif (index === previous) {\n    return null;\n}\n\n// The filter uses the new index at once, so old data stops now\nflow.set(\"ns\", index);\n\nif (previous !== undefined) {\n    node.warn(`namespace index changed from ${previous} to ${index}, restarting flows`);\n    // Only a restart removes old subscriptions inside the POC UA nodes\n    return [null, {\n        method: \"POST\",\n        url: \"http://127.0.0.1:1880/flows\",\n        headers: { \"Node-RED-Deployment-Type\": \"reload\", \"Content-Type\": \"application/json\" },\n        payload: \"{}\",\n    }];\n}\n\nconst subscriptions = NODE_IDS.map((id) => ({ topic: `ns=${index};s=${id}`, payload: \"\" }));\nreturn [subscriptions, null];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// Добавленный здесь код будет исполняться\n// однократно при развертывании узла.\nflow.set(\"ns\", undefined);",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 260,
+        "wires": [
+            [
+                "3aa74e153d9eadd5"
+            ],
+            [
+                "a3d09c32f1a3e330"
+            ]
+        ]
+    },
+    {
+        "id": "3aa74e153d9eadd5",
+        "type": "OpcUa-Client",
+        "z": "b1828014b1a97944",
+        "endpoint": "df26a03461b8fe04",
+        "action": "subscribe",
+        "deadbandtype": "a",
+        "deadbandvalue": 1,
+        "time": "1",
+        "timeUnit": "s",
+        "certificate": "n",
+        "localfile": "",
+        "localkeyfile": "",
+        "securitymode": "None",
+        "securitypolicy": "None",
+        "useTransport": false,
+        "maxChunkCount": 1,
+        "maxMessageSize": 8192,
+        "receiveBufferSize": 8192,
+        "sendBufferSize": 8192,
+        "setstatusandtime": false,
+        "keepsessionalive": false,
+        "name": "data",
+        "applicationName": "",
+        "applicationUri": "",
+        "x": 1030,
+        "y": 260,
+        "wires": [
+            [
+                "feda286b36964b06"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "a3d09c32f1a3e330",
+        "type": "http request",
+        "z": "b1828014b1a97944",
+        "name": "restart flows",
+        "method": "use",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1050,
+        "y": 340,
+        "wires": [
+            []
+        ]
     }
 ]

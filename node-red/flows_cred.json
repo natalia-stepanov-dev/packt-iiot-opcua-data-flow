@@ -2,5 +2,6 @@
     "df26a03461b8fe04": {
         "user": "${OPCUA_USER}",
         "password": "${OPCUA_PASSWORD}"
-    }
+    },
+    "a3d09c32f1a3e330": {}
 }
