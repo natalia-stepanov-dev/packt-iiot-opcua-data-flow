@@ -1,0 +1,13 @@
+{
+  "name": "iiot-edge-node-red",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "node-red-contrib-opcua": "0.2.355"
+  },
+  "overrides": {
+    "node-opcua": "2.187.18",
+    "node-opcua-file-transfer": "2.187.18",
+    "flatted": "3.4.4"
+  }
+}

@@ -1,0 +1,4 @@
+# It holds the key that encrypts passwords
+.config.*
+# Git already keeps old versions
+*.backup 
