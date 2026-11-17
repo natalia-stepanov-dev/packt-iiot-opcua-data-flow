@@ -1,0 +1,120 @@
+[
+    {
+        "id": "b1828014b1a97944",
+        "type": "tab",
+        "label": "Поток 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "df26a03461b8fe04",
+        "type": "OpcUa-Endpoint",
+        "name": "",
+        "endpoint": "opc.tcp://localhost:26543",
+        "secpol": "Basic256Sha256",
+        "secmode": "SignAndEncrypt",
+        "none": false,
+        "login": true,
+        "usercert": false,
+        "usercertificate": "",
+        "userprivatekey": ""
+    },
+    {
+        "id": "d32b5d3eff2b7b6e",
+        "type": "inject",
+        "z": "b1828014b1a97944",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 260,
+        "y": 280,
+        "wires": [
+            [
+                "10c9feab8b413fb6"
+            ]
+        ]
+    },
+    {
+        "id": "10c9feab8b413fb6",
+        "type": "OpcUa-Item",
+        "z": "b1828014b1a97944",
+        "item": "ns=2;s=Gateway.Cpu.Usage",
+        "datatype": "Double",
+        "value": "",
+        "name": "",
+        "x": 480,
+        "y": 280,
+        "wires": [
+            [
+                "45818ffb1b3adf3f"
+            ]
+        ]
+    },
+    {
+        "id": "45818ffb1b3adf3f",
+        "type": "OpcUa-Client",
+        "z": "b1828014b1a97944",
+        "endpoint": "df26a03461b8fe04",
+        "action": "subscribe",
+        "deadbandtype": "a",
+        "deadbandvalue": 1,
+        "time": "1",
+        "timeUnit": "s",
+        "certificate": "n",
+        "localfile": "",
+        "localkeyfile": "",
+        "securitymode": "None",
+        "securitypolicy": "None",
+        "useTransport": false,
+        "maxChunkCount": 1,
+        "maxMessageSize": 8192,
+        "receiveBufferSize": 8192,
+        "sendBufferSize": 8192,
+        "setstatusandtime": false,
+        "keepsessionalive": false,
+        "name": "",
+        "applicationName": "",
+        "applicationUri": "",
+        "x": 700,
+        "y": 280,
+        "wires": [
+            [
+                "feda286b36964b06"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "feda286b36964b06",
+        "type": "debug",
+        "z": "b1828014b1a97944",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 880,
+        "y": 280,
+        "wires": []
+    }
+]

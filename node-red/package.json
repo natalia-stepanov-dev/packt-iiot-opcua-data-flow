@@ -9,5 +9,8 @@
     "node-opcua": "2.187.18",
     "node-opcua-file-transfer": "2.187.18",
     "flatted": "3.4.4"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\""
   }
 }
