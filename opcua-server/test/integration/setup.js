@@ -12,7 +12,9 @@ const {
     UserTokenType,
 } = require("node-opcua");
 
-const ENDPOINT = "opc.tcp://localhost:26543";
+// Not the default port, so the tests can run next to a working server
+const TEST_PORT = 26544;
+const ENDPOINT = `opc.tcp://localhost:${TEST_PORT}`;
 // Test only. A real install gets them from the environment
 const TEST_USER = "test-user";
 const TEST_PASSWORD = "test-password";
@@ -30,7 +32,12 @@ function startServer() {
     return new Promise((resolve, reject) => {
         const child = spawn(process.execPath, [SERVER_FILE], {
             stdio: ["ignore", "pipe", "inherit"],
-            env: { ...process.env, OPCUA_USER: TEST_USER, OPCUA_PASSWORD: TEST_PASSWORD },
+            env: {
+                ...process.env,
+                OPCUA_PORT: String(TEST_PORT),
+                OPCUA_USER: TEST_USER,
+                OPCUA_PASSWORD: TEST_PASSWORD,
+            },
         });
         const timer = setTimeout(() => reject(new Error("Server did not start in 20 s")), 20000);
         child.stdout.on("data", (chunk) => {
