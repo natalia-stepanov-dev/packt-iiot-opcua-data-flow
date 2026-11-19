@@ -15,10 +15,12 @@ Compose are not done yet.
 
 ## Architecture
 
-```
-opcua-server  --OPC UA (SignAndEncrypt, user/password)-->  node-red
-                                                              |
-                                                     (planned: database, Grafana)
+```mermaid
+flowchart LR
+    host["This computer<br/>CPU, memory, disk"] --> server["opcua-server"]
+    server -- "OPC UA<br/>SignAndEncrypt, user/password" --> nodered["node-red"]
+    nodered -.-> db[("Database<br/>planned")]
+    db -.-> grafana["Grafana<br/>planned"]
 ```
 
 - `opcua-server/` - OPC UA server (Node.js, node-opcua)
