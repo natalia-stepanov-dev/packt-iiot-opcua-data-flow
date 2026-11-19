@@ -1,5 +1,7 @@
 # packt-iiot-opcua-data-flow
 
+[![CI](https://github.com/natalia-stepanov-dev/packt-iiot-opcua-data-flow/actions/workflows/ci.yml/badge.svg)](https://github.com/natalia-stepanov-dev/packt-iiot-opcua-data-flow/actions/workflows/ci.yml)
+
 An OPC UA server that publishes health data of the machine it runs on
 (CPU load and temperature, memory, disk, uptime), and a Node-RED edge
 that reads this data.
@@ -104,6 +106,10 @@ The server tests start their own server on port 26544. They can run
 while `npm run dev` is running. The temperature test is skipped on
 machines without a sensor.
 
+GitHub Actions runs these tests on every push to `main` and on pull
+requests, together with lint, the format check (server only) and
+`npm audit --omit=dev`. See `.github/workflows/ci.yml`.
+
 ## Known limitations
 
 - The server accepts every client certificate. The connection is
@@ -125,7 +131,6 @@ machines without a sensor.
 - Store the data in a time series database
 - Grafana dashboards and alerts
 - Docker Compose
-- CI with GitHub Actions
 
 ## License
 
