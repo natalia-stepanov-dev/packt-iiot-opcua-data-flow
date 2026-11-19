@@ -1,0 +1,132 @@
+# packt-iiot-opcua-data-flow
+
+An OPC UA server that publishes health data of the machine it runs on
+(CPU load and temperature, memory, disk, uptime), and a Node-RED edge
+that reads this data.
+
+I am building it during the Coursera specialization
+[Hands-On Industrial Internet of Things](https://www.coursera.org/specializations/packt-hands-on-industrial-internet-of-things)
+by Packt. The exercise of course 1 (Foundations of Industrial IoT) was the
+starting point. What I changed and why is in
+[docs/changes-from-course.md](docs/changes-from-course.md).
+
+Status: the server and the edge work. Storage, dashboards and Docker
+Compose are not done yet.
+
+## Architecture
+
+```
+opcua-server  --OPC UA (SignAndEncrypt, user/password)-->  node-red
+                                                              |
+                                                     (planned: database, Grafana)
+```
+
+- `opcua-server/` - OPC UA server (Node.js, node-opcua)
+- `node-red/` - Node-RED edge: settings, flow, tests
+
+## Requirements
+
+- Linux (tested on Debian 12)
+- Node.js 22.13 or newer (the project uses 24, see `.nvmrc`)
+- For CPU temperature: a hardware sensor (`coretemp`, `k10temp` or
+  `cpu_thermal`). Without a sensor the value has the status
+  `BadOutOfService`.
+
+## Installation and start
+
+```bash
+git clone https://github.com/natalia-stepanov-dev/packt-iiot-opcua-data-flow.git
+cd packt-iiot-opcua-data-flow
+nvm use   # only if you use nvm
+```
+
+OPC UA server:
+
+```bash
+cd opcua-server
+npm ci
+OPCUA_USER=gateway OPCUA_PASSWORD='<your password>' npm run dev
+```
+
+Node-RED (second terminal, in the repository folder, same user and
+password):
+
+```bash
+npm install -g node-red@5.0.9
+cd node-red
+npm ci
+OPCUA_USER=gateway OPCUA_PASSWORD='<your password>' node-red -u .
+```
+
+Then open http://127.0.0.1:1880. The Debug tab shows the data.
+
+## Configuration
+
+| Variable         | Used by          | Default  | Description      |
+| ---------------- | ---------------- | -------- | ---------------- |
+| `OPCUA_USER`     | server, Node-RED | required | OPC UA user name |
+| `OPCUA_PASSWORD` | server, Node-RED | required | OPC UA password  |
+| `OPCUA_PORT`     | server           | 26543    | OPC UA port      |
+| `LOG_LEVEL`      | server           | info     | Log level        |
+
+The server stops with an error if the user name or password is missing.
+
+## Data
+
+Namespace URI: `urn:iiot-edge-gateway`. Find the namespace index by this
+URI in `NamespaceArray` (`ns=0;i=2255`). Do not use a fixed index.
+
+| NodeId (`s=...`)          | Type              | Unit |
+| ------------------------- | ----------------- | ---- |
+| `Gateway.Cpu.Usage`       | AnalogItem, 0-100 | %    |
+| `Gateway.Cpu.Temperature` | AnalogItem, 0-125 | °C   |
+| `Gateway.Memory.Usage`    | AnalogItem, 0-100 | %    |
+| `Gateway.Disk.Usage`      | AnalogItem, 0-100 | %    |
+| `Gateway.Uptime`          | AnalogUnitType    | s    |
+
+All nodes are read-only. Disk usage is measured for `/`.
+
+Security mode: `SignAndEncrypt`. Security policies: `Basic256Sha256`,
+`Aes128_Sha256_RsaOaep`, `Aes256_Sha256_RsaPss`. The server also lists an
+endpoint with `None`, but only to show its addresses. A session with
+`None` is not possible.
+
+## Tests
+
+```bash
+(cd opcua-server && npm test)
+(cd node-red && npm test)
+```
+
+The server tests start their own server on port 26544. They can run
+while `npm run dev` is running. The temperature test is skipped on
+machines without a sensor.
+
+## Known limitations
+
+- The server accepts every client certificate. The connection is
+  encrypted and needs a password, but the client is not checked.
+- The Node-RED editor has no password. It is only reachable on
+  `127.0.0.1`. Do not make port 1880 reachable from a network.
+- node-red-contrib-opcua writes the OPC UA password to the log when a
+  connection fails. `node-red/settings.js` replaces the password with
+  `***` in the Node-RED log.
+- node-red-contrib-opcua 0.2.355 uses an old node-opcua version with known
+  vulnerabilities. `node-red/package.json` replaces it with 2.187.18
+  (`overrides`). Check this after every update of the plugin.
+- The OPC UA address in the flow is fixed: `opc.tcp://localhost:26543`.
+- With the commands above, the password stays in the shell history. Docker
+  Compose with an `.env` file is planned.
+
+## Next steps
+
+- Store the data in a time series database
+- Grafana dashboards and alerts
+- Docker Compose
+- CI with GitHub Actions
+
+## License
+
+- `opcua-server/` is based on the course code: MIT License, Etienne
+  Rossignon (`opcua-server/LICENSE`).
+- All other code: MIT License, Natalia Stepanov (`LICENSE`).
