@@ -12,6 +12,8 @@ permissions:
 jobs:
   server:
     runs-on: ubuntu-24.04
+    # A stuck test must not run for 6 hours (the default)
+    timeout-minutes: 5
     defaults:
       run:
         working-directory: opcua-server
@@ -28,6 +30,7 @@ jobs:
 
   node-red:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     defaults:
       run:
         working-directory: node-red
@@ -41,6 +44,7 @@ jobs:
 
   audit:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     strategy:
       # One red folder must not stop the check of the other
       fail-fast: false
