@@ -1,5 +1,5 @@
 "use strict";
-const { addMemoryNotes } = require("./nodes/memory");
+const { addMemoryNodes } = require("./nodes/memory");
 const { addCpuNodes } = require("./nodes/cpu");
 const { addUptimeNodes } = require("./nodes/uptime");
 const { addDiskNodes } = require("./nodes/disk");
@@ -18,7 +18,7 @@ function constructAddressSpace(server) {
     });
 
     // To add a signal, add one line here
-    addMemoryNotes(namespace, gateway);
+    addMemoryNodes(namespace, gateway);
     const stopCpu = addCpuNodes(namespace, gateway);
     addUptimeNodes(namespace, gateway);
     addDiskNodes(namespace, gateway);

@@ -2,7 +2,7 @@
 const { Variant, DataType, standardUnits } = require("node-opcua");
 const { memoryUsagePercent } = require("../../signals/memory");
 
-function addMemoryNotes(namespace, gateway) {
+function addMemoryNodes(namespace, gateway) {
     const memory = namespace.addObject({
         componentOf: gateway,
         nodeId: "s=Gateway.Memory",
@@ -26,4 +26,4 @@ function addMemoryNotes(namespace, gateway) {
     });
 }
 
-module.exports = { addMemoryNotes };
+module.exports = { addMemoryNodes };
