@@ -18,16 +18,13 @@
     "format:check": "prettier --check .",
     "dev": "node src/main.js | pino-pretty"
   },
-  "author": "Etienne Rossignon <etienne.rossignon@gadz.org>",
+  "author": "Natalia Stepanov",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/erossignon/node-opcua-sampleserver.git"
+    "url": "https://github.com/natalia-stepanov-dev/packt-iiot-opcua-data-flow.git",
+    "directory": "opcua-server"
   },
-  "bugs": {
-    "url": "https://github.com/erossignon/node-opcua-sampleserver/issues"
-  },
-  "homepage": "https://github.com/erossignon/node-opcua-sampleserver",
   "keywords": [
     "OPC-UA",
     "opcua",
