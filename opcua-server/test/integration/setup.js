@@ -112,6 +112,21 @@ async function readUnitId(name) {
     return units.value.value.unitId;
 }
 
+// The client needs the range to check values and draw charts
+async function readRange(name) {
+    const result = await session.translateBrowsePath(
+        makeBrowsePath(`ns=${nsIndex};s=${name}`, ".EURange"),
+    );
+    if (result.statusCode.value !== StatusCodes.Good.value) {
+        throw new Error(`${name} has no range`);
+    }
+    const range = await session.read({
+        nodeId: result.targets[0].targetId,
+        attributeId: AttributeIds.Value,
+    });
+    return { low: range.value.value.low, high: range.value.value.high };
+}
+
 // Notes filled by a timer have no value in the first second
 async function readFirstValue(name) {
     let dataValue = await readValue(name);
@@ -137,6 +152,7 @@ module.exports = {
     readValue,
     writeDouble,
     readUnitId,
+    readRange,
     readFirstValue,
     PERCENT,
     SECOND,

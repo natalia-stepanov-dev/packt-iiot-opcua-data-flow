@@ -18,7 +18,7 @@ function addDiskNodes(namespace, gateway) {
         browseName: "Usage",
         dataType: "Double",
         engineeringUnits: standardUnits.percent,
-        engineeringUnitsRange: { low: 0, hight: 100 },
+        engineeringUnitsRange: { low: 0, high: 100 },
         accessLevel: "CurrentRead",
         userAccessLevel: "CurrentRead",
         minimumSamplingInterval: 1000,
