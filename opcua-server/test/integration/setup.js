@@ -127,7 +127,7 @@ async function readRange(name) {
     return { low: range.value.value.low, high: range.value.value.high };
 }
 
-// Notes filled by a timer have no value in the first second
+// Nodes filled by a timer have no value in the first second
 async function readFirstValue(name) {
     let dataValue = await readValue(name);
     for (
