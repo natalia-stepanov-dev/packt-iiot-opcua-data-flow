@@ -1,7 +1,14 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert/strict");
 const { DataType, StatusCodes } = require("node-opcua");
-const { writeDouble, readUnitId, readFirstValue, CELSIUS, PERCENT } = require("../setup");
+const {
+    writeDouble,
+    readUnitId,
+    readFirstValue,
+    readRange,
+    CELSIUS,
+    PERCENT,
+} = require("../setup");
 
 const USAGE_NODE = "Gateway.Cpu.Usage";
 const TEMPERATURE_NODE = "Gateway.Cpu.Temperature";
@@ -22,6 +29,10 @@ describe("CPU usage", () => {
 
     test("is in percent", async () => {
         assert.equal(await readUnitId(USAGE_NODE), PERCENT);
+    });
+
+    test("has the range 0 to 100", async () => {
+        assert.deepEqual(await readRange(USAGE_NODE), { low: 0, high: 100 });
     });
 });
 
@@ -46,5 +57,9 @@ describe("CPU temperature", () => {
 
     test("is in °C", async () => {
         assert.equal(await readUnitId(TEMPERATURE_NODE), CELSIUS);
+    });
+
+    test("has the range 0 to 125", async () => {
+        assert.deepEqual(await readRange(TEMPERATURE_NODE), { low: 0, high: 125 });
     });
 });

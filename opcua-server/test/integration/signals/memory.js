@@ -1,7 +1,7 @@
 const { describe, test } = require("node:test");
 const assert = require("node:assert/strict");
 const { DataType, StatusCodes } = require("node-opcua");
-const { readValue, writeDouble, readUnitId, PERCENT } = require("../setup");
+const { readValue, writeDouble, readUnitId, readRange, PERCENT } = require("../setup");
 
 const NODE = "Gateway.Memory.Usage";
 
@@ -22,5 +22,9 @@ describe("Memory usage", () => {
     // Node-RED can read the unit and show it next to the value.
     test("is in percent", async () => {
         assert.equal(await readUnitId(NODE), PERCENT);
+    });
+
+    test("has the range 0 to 100", async () => {
+        assert.deepEqual(await readRange(NODE), { low: 0, high: 100 });
     });
 });
