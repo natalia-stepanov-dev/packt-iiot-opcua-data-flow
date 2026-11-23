@@ -12,7 +12,7 @@ function addCpuNodes(namespace, gateway) {
         browseName: "Cpu",
     });
 
-    // Not getter. One mesurement takes 1 s, and the server would freeze
+    // Not getter. One read takes 1 s, and the server would freeze
     const usage = namespace.addAnalogDataItem({
         componentOf: cpu,
         nodeId: "s=Gateway.Cpu.Usage",

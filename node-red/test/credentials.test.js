@@ -13,7 +13,7 @@ test("flows_cred.json holds only ${VAR} references", () => {
   assert.equal(
     credentials.$,
     undefined,
-    "file is encrypted, set credentialServer: false",
+    "file is encrypted, set credentialSecret: false",
   );
   // An empty file would pass the loop below
   assert.ok(Object.keys(credentials).length > 0, "no credentials at all");

@@ -57,7 +57,7 @@ describe("readCpuTemperature", () => {
         assert.equal(readCpuTemperature(root), 53);
     });
 
-    // The hotter sensor comes first. Abug that keeps the last one would fail
+    // The hotter sensor comes first. A bug that keeps the last one would fail
     test("uses the hottest of 2 CPUs", () => {
         addSensor("hwmon1", { name: "coretemp", temp1_input: 61500 });
         addSensor("hwmon2", { name: "coretemp", temp1_input: 53000 });

@@ -1,7 +1,7 @@
 "use strict";
 const crypto = require("crypto");
 
-// timingSafeEqual needs equal lengths. A hash always has the same lenhth
+// timingSafeEqual needs equal lengths. A hash always has the same length
 function sha256(text) {
     return crypto.createHash("sha256").update(text).digest();
 }
