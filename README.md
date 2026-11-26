@@ -12,8 +12,8 @@ by Packt. The exercise of course 1 (Foundations of Industrial IoT) was the
 starting point. What I changed and why is in
 [docs/changes-from-course.md](docs/changes-from-course.md).
 
-Status: the server and the edge work. Storage, dashboards and Docker
-Compose are not done yet.
+Status: the server and the edge work. InfluxDB runs with Docker Compose,
+but the edge does not write to it yet. Dashboards are not done yet.
 
 ## Architecture
 
@@ -21,17 +21,20 @@ Compose are not done yet.
 flowchart LR
     host["This computer<br/>CPU, memory, disk"] --> server["opcua-server"]
     server -- "OPC UA<br/>SignAndEncrypt, user/password" --> nodered["node-red"]
-    nodered -.-> db[("Database<br/>planned")]
+    nodered -. "line protocol<br/>not connected yet" .-> db[("InfluxDB")]
     db -.-> grafana["Grafana<br/>planned"]
 ```
 
 - `opcua-server/` - OPC UA server (Node.js, node-opcua)
 - `node-red/` - Node-RED edge: settings, flow, tests
+- `compose.yaml` - InfluxDB (Docker Compose)
 
 ## Requirements
 
 - Linux (tested on Debian 12)
 - Node.js 22.13 or newer (the project uses 24, see `.nvmrc`)
+- For InfluxDB: Docker with the Compose plugin (tested with Docker 29.9.3
+  and Compose 5.7.1)
 - For CPU temperature: a hardware sensor (`coretemp`, `k10temp` or
   `cpu_thermal`). Without a sensor the value has the status
   `BadOutOfService`.
@@ -64,6 +67,34 @@ OPCUA_USER=gateway OPCUA_PASSWORD='<your password>' GATEWAY_DEVICE=laptop node-r
 
 Then open http://127.0.0.1:1880. The Debug tab shows the data.
 
+InfluxDB (in the repository folder):
+
+```bash
+cp .env.example .env
+```
+
+In `.env`, set the password and the admin token. Random values are fine:
+`openssl rand -hex 32`. Then start the database:
+
+```bash
+docker compose up -d
+```
+
+The first start creates the user `admin`, the organization `iiot` and the
+bucket `gateway`. The database is only reachable on http://127.0.0.1:8086.
+
+Node-RED needs its own token that can only write to `gateway`. Find the
+bucket ID and create the token:
+
+```bash
+docker compose exec influxdb influx bucket list --name gateway
+docker compose exec influxdb influx auth create --org iiot \
+  --write-bucket <bucket ID> --description node-red-write
+```
+
+InfluxDB shows the token only once. Put it into `.env` as
+`INFLUX_NODERED_TOKEN`.
+
 ## Configuration
 
 | Variable         | Used by          | Default  | Description                                 |
@@ -77,6 +108,8 @@ Then open http://127.0.0.1:1880. The Debug tab shows the data.
 The server stops with an error if the user name or password is missing.
 Node-RED stops with an error if `GATEWAY_DEVICE` is missing or uses other
 characters.
+
+InfluxDB reads its settings from `.env`, see `.env.example`.
 
 ## Data
 
@@ -126,14 +159,15 @@ requests, together with lint, the format check (server only) and
   vulnerabilities. `node-red/package.json` replaces it with 2.187.18
   (`overrides`). Check this after every update of the plugin.
 - The OPC UA address in the flow is fixed: `opc.tcp://localhost:26543`.
-- With the commands above, the password stays in the shell history. Docker
-  Compose with an `.env` file is planned.
+- With the commands above, the OPC UA password stays in the shell history.
+  InfluxDB already reads its secrets from `.env`. The server and Node-RED
+  will do the same with Docker Compose.
 
 ## Next steps
 
-- Store the data in a time series database
+- Write the data from Node-RED to InfluxDB
 - Grafana dashboards and alerts
-- Docker Compose
+- Docker Compose for the server and Node-RED
 
 ## License
 
