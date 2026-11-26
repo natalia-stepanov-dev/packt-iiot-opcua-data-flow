@@ -113,7 +113,7 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1200,
+        "x": 1380,
         "y": 260,
         "wires": []
     },
@@ -169,7 +169,7 @@
         "y": 260,
         "wires": [
             [
-                "feda286b36964b06"
+                "bca8bfaf56d279b2"
             ],
             [],
             []
@@ -195,6 +195,26 @@
         "y": 340,
         "wires": [
             []
+        ]
+    },
+    {
+        "id": "bca8bfaf56d279b2",
+        "type": "function",
+        "z": "b1828014b1a97944",
+        "name": "to line protocol",
+        "func": "// The code and its tests are in node-red/lib/to-line-protocol.js\nconst { toLineProtocol, namespaceIndexOf } = global.get(\"lineProtocol\");\n\n// subscriptionId is a known service message from the client\nif (msg.topic === \"subscriptionId\") {\n    return null;\n}\n\nconst stale = context.get(\"stale\");\nconst index = namespaceIndexOf(msg.topic);\nconst current = flow.get(\"ns\");\n// A message from an old subscription. Its index may point to another namespace\nif (index !== current) {\n    const warning = stale.drop(index, current);\n    if (warning) {\n        node.warn(warning);\n    }\n    return null;\n}\n\nconst summary = stale.accept();\nif (summary) {\n    node.log(summary);\n}\n\nmsg.payload = toLineProtocol(msg, { device: env.get(\"GATEWAY_DEVICE\") });\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// One counter for the life of this node. See lib/to-line-protocol.js\nconst { createStaleCounter } = global.get(\"lineProtocol\");\ncontext.set(\"stale\", createStaleCounter());",
+        "finalize": "",
+        "libs": [],
+        "x": 1220,
+        "y": 260,
+        "wires": [
+            [
+                "feda286b36964b06"
+            ]
         ]
     }
 ]

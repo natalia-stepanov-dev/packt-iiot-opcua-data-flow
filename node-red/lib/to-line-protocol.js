@@ -1,14 +1,19 @@
 // Safe in line protocol tags and in MQTT topics (module 2) without escaping
 const DEVICE_NAME = /^[A-Za-z0-9_.-]+$/;
 
-// Turns one message of the OPC UA client node into InfluxDB line protocol
-function toLineProtocol(msg, { device }) {
+// settings.js calls it at start, toLineProtocol for every message
+function checkDevice(device) {
   // test() turns undefined into the text "undefined", and that would pass
   if (typeof device !== "string" || !DEVICE_NAME.test(device)) {
     throw new Error(
       `GATEWAY_DEVICE "${device}" may only use A-Z a-z 0-9 _ . -`,
     );
   }
+}
+
+// Turns one message of the OPC UA client node into InfluxDB line protocol
+function toLineProtocol(msg, { device }) {
+  checkDevice(device);
 
   // The topic is "ns=<index>;s=<id>". The tag keeps the id as it is in OPC UA
   const signal = msg.topic.split(";s=")[1];
@@ -63,4 +68,9 @@ function createStaleCounter() {
   };
 }
 
-module.exports = { toLineProtocol, namespaceIndexOf, createStaleCounter };
+module.exports = {
+  checkDevice,
+  toLineProtocol,
+  namespaceIndexOf,
+  createStaleCounter,
+};

@@ -53,27 +53,30 @@ OPCUA_USER=gateway OPCUA_PASSWORD='<your password>' npm run dev
 ```
 
 Node-RED (second terminal, in the repository folder, same user and
-password):
+password, and a device name):
 
 ```bash
 npm install -g node-red@5.0.9
 cd node-red
 npm ci
-OPCUA_USER=gateway OPCUA_PASSWORD='<your password>' node-red -u .
+OPCUA_USER=gateway OPCUA_PASSWORD='<your password>' GATEWAY_DEVICE=laptop node-red -u .
 ```
 
 Then open http://127.0.0.1:1880. The Debug tab shows the data.
 
 ## Configuration
 
-| Variable         | Used by          | Default  | Description      |
-| ---------------- | ---------------- | -------- | ---------------- |
-| `OPCUA_USER`     | server, Node-RED | required | OPC UA user name |
-| `OPCUA_PASSWORD` | server, Node-RED | required | OPC UA password  |
-| `OPCUA_PORT`     | server           | 26543    | OPC UA port      |
-| `LOG_LEVEL`      | server           | info     | Log level        |
+| Variable         | Used by          | Default  | Description                                 |
+| ---------------- | ---------------- | -------- | ------------------------------------------- |
+| `OPCUA_USER`     | server, Node-RED | required | OPC UA user name                            |
+| `OPCUA_PASSWORD` | server, Node-RED | required | OPC UA password                             |
+| `GATEWAY_DEVICE` | Node-RED         | required | Device name in the data: A-Z a-z 0-9 \_ . - |
+| `OPCUA_PORT`     | server           | 26543    | OPC UA port                                 |
+| `LOG_LEVEL`      | server           | info     | Log level                                   |
 
 The server stops with an error if the user name or password is missing.
+Node-RED stops with an error if `GATEWAY_DEVICE` is missing or uses other
+characters.
 
 ## Data
 
