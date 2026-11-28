@@ -105,7 +105,7 @@
         "type": "debug",
         "z": "b1828014b1a97944",
         "name": "debug 1",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -113,8 +113,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1380,
-        "y": 260,
+        "x": 1580,
+        "y": 220,
         "wires": []
     },
     {
@@ -166,7 +166,7 @@
         "applicationName": "",
         "applicationUri": "",
         "x": 1030,
-        "y": 260,
+        "y": 240,
         "wires": [
             [
                 "bca8bfaf56d279b2"
@@ -192,7 +192,7 @@
         "senderr": false,
         "headers": [],
         "x": 1050,
-        "y": 340,
+        "y": 300,
         "wires": [
             []
         ]
@@ -210,11 +210,54 @@
         "finalize": "",
         "libs": [],
         "x": 1220,
-        "y": 260,
+        "y": 220,
         "wires": [
             [
-                "feda286b36964b06"
+                "bcce6a2bdd9622a2"
             ]
+        ]
+    },
+    {
+        "id": "bcce6a2bdd9622a2",
+        "type": "http request",
+        "z": "b1828014b1a97944",
+        "name": "write to InfluxDB",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "http://127.0.0.1:8086/api/v2/write?org=iiot&bucket=gateway&precision=ms",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "bearer",
+        "senderr": false,
+        "headers": [],
+        "x": 1400,
+        "y": 220,
+        "wires": [
+            [
+                "feda286b36964b06",
+                "b86567ad5a0e573d"
+            ]
+        ]
+    },
+    {
+        "id": "b86567ad5a0e573d",
+        "type": "function",
+        "z": "b1828014b1a97944",
+        "name": "check write",
+        "func": "// The code and its tests are in node-red/lib/to-line-protocol.js\nconst failures = context.get(\"failures\");\n\n// InfluxDB answers 204 with an empty body when it has the point\nif (msg.statusCode === 204) {\n    const summary = failures.ok();\n    if (summary) {\n        // A warning, not a log line: points are lost\n        node.warn(summary);\n    }\n    return null;\n}\n\nconst error = failures.fail(msg.statusCode, msg.payload);\nif (error) {\n    node.error(error, msg);\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "// One counter for the life of this node. See lib/to-line-protocol.js\nconst { createWriteFailureCounter } = global.get(\"lineProtocol\");\ncontext.set(\"failures\", createWriteFailureCounter());",
+        "finalize": "",
+        "libs": [],
+        "x": 1590,
+        "y": 280,
+        "wires": [
+            []
         ]
     }
 ]

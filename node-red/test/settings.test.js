@@ -5,6 +5,7 @@ const path = require("node:path");
 
 process.env.OPCUA_PASSWORD = "Secret-42";
 process.env.GATEWAY_DEVICE = "test-device";
+process.env.INFLUX_NODERED_TOKEN = "test-token";
 
 const settings = require("../settings.js");
 
@@ -29,21 +30,29 @@ test("function nodes get the line protocol module", () => {
   );
 });
 
-test("Node-RED does not start without GATEWAY_DEVICE", () => {
-  // A new process: this file has already loaded settings.js with a valid name
+// A new process: this file has already loaded settings.js with all variables
+function loadSettingsWithout(variable) {
   const env = { ...process.env };
-  delete env.GATEWAY_DEVICE;
+  delete env[variable];
 
-  const result = spawnSync(
-    process.execPath,
-    ["-e", 'require("./settings.js")'],
-    {
-      cwd: path.join(__dirname, ".."),
-      env,
-      encoding: "utf8",
-    },
-  );
+  return spawnSync(process.execPath, ["-e", 'require("./settings.js")'], {
+    cwd: path.join(__dirname, ".."),
+    env,
+    encoding: "utf8",
+  });
+}
+
+test("Node-RED does not start without GATEWAY_DEVICE", () => {
+  const result = loadSettingsWithout("GATEWAY_DEVICE");
 
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /GATEWAY_DEVICE/);
+});
+
+test("Node-RED does not start without INFLUX_NODERED_TOKEN", () => {
+  // Without it every write gets 401, and the data is lost
+  const result = loadSettingsWithout("INFLUX_NODERED_TOKEN");
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /INFLUX_NODERED_TOKEN/);
 });

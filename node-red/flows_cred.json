@@ -3,5 +3,8 @@
         "user": "${OPCUA_USER}",
         "password": "${OPCUA_PASSWORD}"
     },
-    "a3d09c32f1a3e330": {}
+    "a3d09c32f1a3e330": {},
+    "bcce6a2bdd9622a2": {
+        "password": "${INFLUX_NODERED_TOKEN}"
+    }
 }

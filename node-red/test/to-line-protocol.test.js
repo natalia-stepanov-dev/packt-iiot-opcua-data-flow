@@ -5,6 +5,7 @@ const {
   toLineProtocol,
   namespaceIndexOf,
   createStaleCounter,
+  createWriteFailureCounter,
 } = require("../lib/to-line-protocol.js");
 
 // A real message from the OPC UA client node (25.11.2026)
@@ -91,7 +92,7 @@ test("the first normal message after old ones gives one summary", () => {
   stale.drop(3, 2);
 
   assert.equal(stale.accept(), "dropped 3 messages from old namespace index 3");
-  // Until the next change there is nothing to report
+  // Not a summary for every normal message, that would be 5 lines a second
   assert.equal(stale.accept(), null);
 });
 
@@ -104,4 +105,27 @@ test("a device name with other characters than A-Z a-z 0-9 _ . - is an error", (
       `device: ${device}`,
     );
   }
+});
+
+test("only the first failed write gives an error", () => {
+  const failures = createWriteFailureCounter();
+  const body = '{"code":"unauthorized","message":"unauthorized access"}';
+
+  assert.equal(failures.fail(401, body), `InfluxDB write failed: 401 ${body}`);
+  // The next ones are counted, not logged
+  assert.equal(failures.fail(401, body), null);
+});
+
+test("the first write after failed ones gives one summary", () => {
+  const failures = createWriteFailureCounter();
+  failures.fail(401, "");
+  failures.fail(401, "");
+  failures.fail(401, "");
+
+  assert.equal(
+    failures.ok(),
+    "InfluxDB writes work again, 3 points were not written",
+  );
+  // Not a summary for every good write, that would be 5 lines a second
+  assert.equal(failures.ok(), null);
 });

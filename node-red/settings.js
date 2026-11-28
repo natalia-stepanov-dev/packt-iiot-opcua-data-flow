@@ -3,6 +3,11 @@ const lineProtocol = require("./lib/to-line-protocol.js");
 // Like the OPC UA server: no start with a wrong setting
 lineProtocol.checkDevice(process.env.GATEWAY_DEVICE);
 
+// Without it every write gets 401, and the data is lost until someone looks
+if (!process.env.INFLUX_NODERED_TOKEN) {
+  throw new Error("INFLUX_NODERED_TOKEN is not set, see .env.example");
+}
+
 const OPCUA_PASSWORD = process.env.OPCUA_PASSWORD;
 
 module.exports = {

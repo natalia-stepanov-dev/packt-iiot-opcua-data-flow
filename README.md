@@ -4,7 +4,7 @@
 
 An OPC UA server that publishes health data of the machine it runs on
 (CPU load and temperature, memory, disk, uptime), and a Node-RED edge
-that reads this data.
+that reads this data and writes it to InfluxDB.
 
 I am building it during the Coursera specialization
 [Hands-On Industrial Internet of Things](https://www.coursera.org/specializations/packt-hands-on-industrial-internet-of-things)
@@ -12,8 +12,8 @@ by Packt. The exercise of course 1 (Foundations of Industrial IoT) was the
 starting point. What I changed and why is in
 [docs/changes-from-course.md](docs/changes-from-course.md).
 
-Status: the server and the edge work. InfluxDB runs with Docker Compose,
-but the edge does not write to it yet. Dashboards are not done yet.
+Status: the server, the edge and InfluxDB work. The edge writes all
+values to InfluxDB. Dashboards are not done yet.
 
 ## Architecture
 
@@ -21,7 +21,7 @@ but the edge does not write to it yet. Dashboards are not done yet.
 flowchart LR
     host["This computer<br/>CPU, memory, disk"] --> server["opcua-server"]
     server -- "OPC UA<br/>SignAndEncrypt, user/password" --> nodered["node-red"]
-    nodered -. "line protocol<br/>not connected yet" .-> db[("InfluxDB")]
+    nodered -- "HTTP, line protocol<br/>write-only token" --> db[("InfluxDB")]
     db -.-> grafana["Grafana<br/>planned"]
 ```
 
@@ -55,18 +55,6 @@ npm ci
 OPCUA_USER=gateway OPCUA_PASSWORD='<your password>' npm run dev
 ```
 
-Node-RED (second terminal, in the repository folder, same user and
-password, and a device name):
-
-```bash
-npm install -g node-red@5.0.9
-cd node-red
-npm ci
-OPCUA_USER=gateway OPCUA_PASSWORD='<your password>' GATEWAY_DEVICE=laptop node-red -u .
-```
-
-Then open http://127.0.0.1:1880. The Debug tab shows the data.
-
 InfluxDB (in the repository folder):
 
 ```bash
@@ -95,19 +83,38 @@ docker compose exec influxdb influx auth create --org iiot \
 InfluxDB shows the token only once. Put it into `.env` as
 `INFLUX_NODERED_TOKEN`.
 
+Node-RED (second terminal, in the repository folder, same user and
+password, a device name and the token from `.env`):
+
+```bash
+npm install -g node-red@5.0.9
+cd node-red
+npm ci
+INFLUX_NODERED_TOKEN="$(sed -n 's/^INFLUX_NODERED_TOKEN=//p' ../.env)" \
+  OPCUA_USER=gateway OPCUA_PASSWORD='<your password>' GATEWAY_DEVICE=laptop \
+  node-red -u .
+```
+
+The command takes only this token from `.env`, so Node-RED does not get
+the admin token. Then open http://127.0.0.1:1880.
+
+To see the data, open Data Explorer on http://127.0.0.1:8086: bucket
+`gateway`, field `value`.
+
 ## Configuration
 
-| Variable         | Used by          | Default  | Description                                 |
-| ---------------- | ---------------- | -------- | ------------------------------------------- |
-| `OPCUA_USER`     | server, Node-RED | required | OPC UA user name                            |
-| `OPCUA_PASSWORD` | server, Node-RED | required | OPC UA password                             |
-| `GATEWAY_DEVICE` | Node-RED         | required | Device name in the data: A-Z a-z 0-9 \_ . - |
-| `OPCUA_PORT`     | server           | 26543    | OPC UA port                                 |
-| `LOG_LEVEL`      | server           | info     | Log level                                   |
+| Variable               | Used by          | Default  | Description                                 |
+| ---------------------- | ---------------- | -------- | ------------------------------------------- |
+| `OPCUA_USER`           | server, Node-RED | required | OPC UA user name                            |
+| `OPCUA_PASSWORD`       | server, Node-RED | required | OPC UA password                             |
+| `GATEWAY_DEVICE`       | Node-RED         | required | Device name in the data: A-Z a-z 0-9 \_ . - |
+| `INFLUX_NODERED_TOKEN` | Node-RED         | required | InfluxDB token, can only write to `gateway` |
+| `OPCUA_PORT`           | server           | 26543    | OPC UA port                                 |
+| `LOG_LEVEL`            | server           | info     | Log level                                   |
 
 The server stops with an error if the user name or password is missing.
 Node-RED stops with an error if `GATEWAY_DEVICE` is missing or uses other
-characters.
+characters, or if `INFLUX_NODERED_TOKEN` is missing.
 
 InfluxDB reads its settings from `.env`, see `.env.example`.
 
@@ -160,14 +167,18 @@ requests, together with lint, the format check (server only) and
   (`overrides`). Check this after every update of the plugin.
 - The OPC UA address in the flow is fixed: `opc.tcp://localhost:26543`.
 - With the commands above, the OPC UA password stays in the shell history.
-  InfluxDB already reads its secrets from `.env`. The server and Node-RED
-  will do the same with Docker Compose.
+  The InfluxDB secrets and the Node-RED token come from `.env`. The OPC UA
+  password will move there with Docker Compose.
+- Node-RED writes to InfluxDB directly and has no buffer. If InfluxDB
+  cannot be reached, the points are lost. The flow logs the first error
+  and, when writing works again, how many points were not written. The
+  http request node itself also logs an error for every point.
 
 ## Next steps
 
-- Write the data from Node-RED to InfluxDB
-- Grafana dashboards and alerts
 - Docker Compose for the server and Node-RED
+- A buffer between the edge and InfluxDB: MQTT and Telegraf
+- Grafana dashboards and alerts
 
 ## License
 

@@ -61,8 +61,32 @@ function createStaleCounter() {
         return null;
       }
       const summary = `dropped ${dropped} messages from old namespace index ${droppedIndex}`;
-      // The next change starts a new count and a new warning
+      // Without it, the next change would give no warning
       dropped = 0;
+      return summary;
+    },
+  };
+}
+
+// A long outage must not flood the log, but we must know how many points we lost
+function createWriteFailureCounter() {
+  let failed = 0;
+
+  return {
+    fail(statusCode, body) {
+      failed += 1;
+      if (failed > 1) {
+        return null;
+      }
+      return `InfluxDB write failed: ${statusCode} ${body}`;
+    },
+    ok() {
+      if (failed === 0) {
+        return null;
+      }
+      const summary = `InfluxDB writes work again, ${failed} points were not written`;
+      // Without it, the next failure would give no error
+      failed = 0;
       return summary;
     },
   };
@@ -73,4 +97,5 @@ module.exports = {
   toLineProtocol,
   namespaceIndexOf,
   createStaleCounter,
+  createWriteFailureCounter,
 };
