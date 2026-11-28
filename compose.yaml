@@ -5,6 +5,8 @@ services:
   influxdb:
     # The tag is for people, Docker uses the digest: a tag can be moved to another build
     image: influxdb:2.9.1@sha256:e4572d094ac3272f06528ea904ce6b4cb3bb19be2db3b3b1acbd27ba5c3a73e2
+    # Starts again after a reboot or a crash, but not after docker compose stop
+    restart: unless-stopped
     ports:
       # Only this computer can open the database
       - "127.0.0.1:8086:8086"
